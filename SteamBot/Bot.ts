@@ -3,6 +3,7 @@ import SteamCommunity = require('steamcommunity')
 import SteamTOTP = require('steam-totp')
 import TradeOfferManager = require('steam-tradeoffer-manager')
 import { resolve as resolvePath } from 'path'
+import { logger } from '..'
 import { Trade } from '../types'
 import { Config, TradeOffer, TradeOfferState } from './interfaces'
 import { existsAsync, readFileAsync, waitAsync, writeFileAsync } from './utils'
@@ -118,6 +119,7 @@ export class Bot {
   }
 
   public sendTrade({ item_id, tradelink, costum_id }: Trade) {
+    logger.info(`Sending a new TRADE to ${tradelink} an item id ${item_id}`)
     const offer = this._manager.createOffer(tradelink)
     offer.addMyItem({
       appid: 730,
@@ -126,7 +128,14 @@ export class Bot {
       assetid: item_id,
     })
     offer.setMessage(costum_id)
-    offer.send()
+    offer.send((err, send) => {
+      if (err) return logger.error(err)
+      logger.info(`Sent the trade`, send)
+      this._community.acceptConfirmationForObject(this._config.identity_secret, offer.id, errConfirm => {
+        if (errConfirm) return logger.error(`Error confirming the trade`)
+        logger.info(`Confirmed the trade ${offer.id}`)
+      })
+    })
   }
   public getMyApi() {
     return new Promise((resolve, reject) => {
@@ -141,7 +150,6 @@ export class Bot {
       })
     })
   }
-
   protected async _waitForSteamConnection() {
     while (true) {
       if (this._user.steamID) {

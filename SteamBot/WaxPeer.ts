@@ -1,12 +1,13 @@
 import { EventEmitter } from 'events'
 import RequestPromise from 'request-promise'
-import { getMyInventory, Trade, Trades } from '../types'
+import { logger } from '..'
+import { getMyInventory, Trades } from '../types'
 export class WaxPeer extends EventEmitter {
   private api: string
   public baseUrl: string =
     process.env.NODE_ENV === 'development' ? 'http://localhost:3025/' : 'https://api.waxpeer.com/'
   public verson: string = 'v1'
-  public trades: { [key: string]: Trade } = {}
+  public trades: { [key: string]: number } = {}
   private log
   constructor(api: string, l) {
     super()
@@ -17,7 +18,11 @@ export class WaxPeer extends EventEmitter {
   async listen() {
     this.log.info('Started listening')
     while (true) {
-      await this.proccessTrades()
+      try {
+        await this.proccessTrades()
+      } catch (e) {
+        logger.error(`WAX PEER error, retrying in 5 seconds`)
+      }
       await new Promise(res => setTimeout(res, 5000))
     }
   }
@@ -26,11 +31,15 @@ export class WaxPeer extends EventEmitter {
     return await this.get('ping')
   }
   async proccessTrades() {
+    logger.info(`Fetching trades`)
     let request_trades: Trades = await this.get('ready-to-transfer-p2p')
-    if (request_trades.success) {
+    if (this.request && request_trades.success) {
       for (let trade of request_trades.trades) {
         if (!this.trades[trade.costum_id]) {
-          this.trades[trade.costum_id] = trade
+          this.trades[trade.costum_id] = 1
+          this.emit('new-trade', trade)
+        } else if (this.trades[trade.costum_id] < 4) {
+          this.trades[trade.costum_id] += 1
           this.emit('new-trade', trade)
         }
       }
@@ -54,13 +63,13 @@ export class WaxPeer extends EventEmitter {
     }
     if (success) {
       this.log.info('Online')
-      await this.fetchMyInventory()
-      this.log.info('Inventory fetched')
-      let items = await this.getInventory()
-      if (items.length > 0) {
-        let ids = items.map(i => i.item_id)
-        await this.transferToInventory(ids)
-      }
+      // await this.fetchMyInventory()
+      // this.log.info('Inventory fetched')
+      // let items = await this.getInventory()
+      // if (items.length > 0) {
+      //   let ids = items.map(i => i.item_id)
+      //   await this.transferToInventory(ids)
+      // }
       this.log.info('Fetched inventory')
       await this.listen()
     } else {
