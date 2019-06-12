@@ -1,7 +1,7 @@
-import { EventEmitter } from 'events'
-import RequestPromise from 'request-promise'
-import { logger } from '..'
-import { getMyInventory, Trades } from '../types'
+import { EventEmitter } from 'events';
+import RequestPromise from 'request-promise';
+import { logger } from '..';
+import { getMyInventory, Trades } from '../types';
 export class WaxPeer extends EventEmitter {
   private api: string
   public baseUrl: string =
@@ -63,13 +63,13 @@ export class WaxPeer extends EventEmitter {
     }
     if (success) {
       this.log.info('Online')
-      // await this.fetchMyInventory()
-      // this.log.info('Inventory fetched')
-      // let items = await this.getInventory()
-      // if (items.length > 0) {
-      //   let ids = items.map(i => i.item_id)
-      //   await this.transferToInventory(ids)
-      // }
+      await this.fetchMyInventory()
+      this.log.info('Inventory fetched')
+      let items = await this.getInventory()
+      if (items.length > 0) {
+        let ids = items.map(i => i.item_id)
+        await this.transferToInventory(ids)
+      }
       this.log.info('Fetched inventory')
       await this.listen()
     } else {
