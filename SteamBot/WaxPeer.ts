@@ -1,7 +1,7 @@
-import { EventEmitter } from 'events';
-import RequestPromise from 'request-promise';
-import { logger } from '..';
-import { getMyInventory, Trades } from '../types';
+import { EventEmitter } from 'events'
+import RequestPromise from 'request-promise'
+import { logger } from '..'
+import { getMyInventory, Trades } from '../types'
 export class WaxPeer extends EventEmitter {
   private api: string
   public baseUrl: string =
@@ -23,10 +23,12 @@ export class WaxPeer extends EventEmitter {
       } catch (e) {
         logger.error(`WAX PEER error, retrying in 5 seconds`)
       }
-      await new Promise(res => setTimeout(res, 5000))
+      await this.sleep(5000)
     }
   }
-
+  async sleep(time: number) {
+    return new Promise(res => setTimeout(res, time))
+  }
   async ping(): Promise<{ success: boolean; msg: string }> {
     return await this.get('ping')
   }
@@ -117,7 +119,9 @@ export class WaxPeer extends EventEmitter {
     try {
       return <T>JSON.parse(await RequestPromise(url, opt))
     } catch (e) {
-      this.log.error(e)
+      this.log.error(`Looks like something wrong with waxpeer retrying in 5 seconds`)
+      await this.sleep(5000)
+      return await this.request(url, opt)
     }
   }
 }
