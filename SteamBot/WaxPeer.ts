@@ -5,7 +5,7 @@ import { getMyInventory, Trades } from '../types'
 export class WaxPeer extends EventEmitter {
   private api: string
   public baseUrl: string =
-    process.env.NODE_ENV === 'development' ? 'http://localhost:3025/' : 'https://api.waxpeer.com/'
+    process.env.NODE_ENV === 'development' ? 'http://localhost:3020/' : 'https://api.waxpeer.com/'
   public verson: string = 'v1'
   public trades: { [key: string]: number } = {}
   private log
