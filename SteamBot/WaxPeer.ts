@@ -1,7 +1,7 @@
-import { EventEmitter } from 'events'
-import RequestPromise from 'request-promise'
-import { logger } from '..'
-import { getMyInventory, Trades } from '../types'
+import { EventEmitter } from 'events';
+import RequestPromise from 'request-promise';
+import { logger } from '..';
+import { getMyInventory, Trades } from '../types';
 export class WaxPeer extends EventEmitter {
   private api: string
   public baseUrl: string =
@@ -119,6 +119,7 @@ export class WaxPeer extends EventEmitter {
     try {
       return <T>JSON.parse(await RequestPromise(url, opt))
     } catch (e) {
+      console.log(e)
       this.log.error(`Looks like something wrong with waxpeer retrying in 5 seconds`)
       await this.sleep(5000)
       return await this.request(url, opt)
