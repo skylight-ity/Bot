@@ -5,7 +5,7 @@ import { getMyInventory, Trades } from '../types';
 export class WaxPeer extends EventEmitter {
   private api: string
   public baseUrl: string =
-    process.env.NODE_ENV === 'development' ? 'http://localhost:3020/' : 'https://api.waxpeer.com/'
+    process.env.NODE_ENV === 'development' ? 'http://localhost:3021/' : 'https://api.waxpeer.com/'
   public verson: string = 'v1'
   public trades: { [key: string]: number } = {}
   private log
@@ -39,9 +39,6 @@ export class WaxPeer extends EventEmitter {
       for (let trade of request_trades.trades) {
         if (!this.trades[trade.costum_id]) {
           this.trades[trade.costum_id] = 1
-          this.emit('new-trade', trade)
-        } else if (this.trades[trade.costum_id] < 4) {
-          this.trades[trade.costum_id] += 1
           this.emit('new-trade', trade)
         }
       }

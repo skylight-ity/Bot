@@ -4,11 +4,12 @@ WORKDIR /usr/src/app
 
 COPY package*.json ./
 
-RUN npm install
+
 COPY . .
 
 EXPOSE 6002
 
 ENV NODE_ENV=production
-RUN tsc
-CMD [ "npm","run", "start" ]
+RUN npm i ts-node
+RUN npm install typescript
+CMD [ "ts-node index.ts"]
