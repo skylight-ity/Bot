@@ -1,7 +1,7 @@
-import { EventEmitter } from 'events';
-import RequestPromise from 'request-promise';
-import { logger } from '..';
-import { getMyInventory, Trades } from '../types';
+import { EventEmitter } from 'events'
+import RequestPromise from 'request-promise'
+import { logger } from '..'
+import { getMyInventory, Trades } from '../types'
 export class WaxPeer extends EventEmitter {
   private api: string
   public baseUrl: string =
@@ -34,14 +34,20 @@ export class WaxPeer extends EventEmitter {
   }
   async proccessTrades() {
     logger.info(`Fetching trades`)
-    let request_trades: Trades = await this.get('ready-to-transfer-p2p')
-    if (this.request && request_trades.success) {
-      for (let trade of request_trades.trades) {
-        if (!this.trades[trade.costum_id]) {
-          this.trades[trade.costum_id] = 1
-          this.emit('new-trade', trade)
+    try {
+      let request_trades: Trades = await this.get('ready-to-transfer-p2p')
+      if (this.request && request_trades.success) {
+        for (let trade of request_trades.trades) {
+          if (!this.trades[trade.costum_id]) {
+            this.trades[trade.costum_id] = 1
+            this.emit('new-trade', trade)
+          }
         }
       }
+    } catch (e) {
+      logger.error('Error happen')
+      await this.sleep(5000)
+      await this.proccessTrades()
     }
   }
 
