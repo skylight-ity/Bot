@@ -41,6 +41,7 @@ export class Bot {
       this._sessionHasExpired = false
       this._manager.setCookies(cookies)
       this._community.setCookies(cookies)
+      this._community.startConfirmationChecker(1000, this._config.identity_secret)
     })
 
     this._user.on('disconnected', (eresult, msg) => {
@@ -82,7 +83,17 @@ export class Bot {
 
       log.info('TradeManager wrote pollData')
     })
-
+    this._community.on('newConfirmation', function(d) {
+      var time = Math.round(Date.now() / 1e3)
+      var data = SteamTOTP.getConfirmationKey(this._config.identity_secret, time, 'allow')
+      this._community.respondToConfirmation(d.id, d.key, time, data, true, function(error) {
+        console.log('[BOT] Outgoing confirmation for the trade: ' + d.key)
+        if (error) {
+          console.log('[BOT] Error while confirming the trade: ' + error)
+          this._user.webLogOn()
+        }
+      })
+    })
     this._manager.on('error', error => {
       log.info('TradeManager error', { error })
     })
