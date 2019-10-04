@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 import { createLogger } from 'bunyan'
+import { Waxpeer } from 'waxpeer'
 import { Bot } from './SteamBot/Bot'
 import { Config } from './SteamBot/interfaces'
-import { WaxPeer } from './SteamBot/WaxPeer'
 import { Trade } from './types'
 require('dotenv').config()
 const config: Config = {
@@ -20,17 +20,13 @@ async function main() {
   log.info('Starting')
   const bot = new Bot(config, logger)
   await bot.start()
-  let peer = new WaxPeer(process.env.WAXPEER_API, wlog)
+  let peer = new Waxpeer(process.env.WAXPEER_API)
   peer.on('new-trade', (trade: Trade) => bot.sendTrade(trade))
   peer.on('noSteamApi', () => {
     log.error('Wrong steam api')
     bot
       .getMyApi()
       .then((key: string) => {
-        peer
-          .setMyApi(key)
-          .then(async () => await peer.start())
-          .catch(log.error)
       })
       .catch(log.error)
   })

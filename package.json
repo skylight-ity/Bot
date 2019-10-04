@@ -20,7 +20,8 @@
     "steam-totp": "^2.1.0",
     "steam-tradeoffer-manager": "^2.9.5",
     "steam-user": "^4.9.1",
-    "steamcommunity": "^3.40.0"
+    "steamcommunity": "^3.40.0",
+    "waxpeer": "^1.0.0"
   },
   "devDependencies": {
     "@types/bunyan": "^1.8.6",
