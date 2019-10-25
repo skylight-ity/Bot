@@ -6,7 +6,7 @@
   "scripts": {
     "build": "rm -rf dist && tsc",
     "start": "node dist/index.js",
-    "dev": "cross-env NODE_ENV=development WAXPEER_API=a2264db87302822381886522e1d47b68ed0ae6b9 tsc-watch --onSuccess \"node ./dist/index.js\""
+    "dev": "cross-env NODE_ENV=development WAXPEER_API=1e57b79183077b15e0b8e07fae469a15b2fa83f304476b875e5c1896eed7d6dd tsc-watch --onSuccess \"node ./dist/index.js\""
   },
   "keywords": [],
   "author": "",
@@ -14,20 +14,20 @@
   "dependencies": {
     "@types/request-promise": "^4.1.44",
     "bunyan": "^1.8.12",
-    "dotenv": "^8.0.0",
+    "dotenv": "^8.2.0",
     "fs": "0.0.1-security",
     "request-promise": "^4.2.4",
-    "steam-totp": "^2.1.0",
-    "steam-tradeoffer-manager": "^2.9.5",
-    "steam-user": "^4.9.1",
-    "steamcommunity": "^3.40.0",
-    "waxpeer": "^1.0.0"
+    "steam-totp": "^2.1.1",
+    "steam-tradeoffer-manager": "^2.10.1",
+    "steam-user": "^4.12.4",
+    "steamcommunity": "^3.41.1",
+    "waxpeer": "^1.0.8"
   },
   "devDependencies": {
     "@types/bunyan": "^1.8.6",
-    "ts-node": "^8.2.0",
+    "ts-node": "^8.4.1",
     "tsc": "^1.20150623.0",
-    "tsc-watch": "^2.2.1",
-    "typescript": "^3.5.1"
+    "tsc-watch": "^2.4.0",
+    "typescript": "^3.6.4"
   }
 }

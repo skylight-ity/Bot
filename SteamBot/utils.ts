@@ -1,4 +1,5 @@
 import { exists, readFile, writeFile } from 'fs'
+export const sleep = async n => await new Promise(res => setTimeout(res, n))
 
 export const waitAsync = (seconds: number) =>
   new Promise(resolve => {

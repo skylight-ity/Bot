@@ -1,18 +1,19 @@
+import { resolve as resolvePath } from 'path';
+import { logger } from '..';
+import { ISendTrade } from './../types/steam';
+import { Config, TradeOffer, TradeOfferState } from './interfaces';
+import { existsAsync, readFileAsync, waitAsync, writeFileAsync } from './utils';
 import SteamUser = require('steam-user')
 import SteamCommunity = require('steamcommunity')
 import SteamTOTP = require('steam-totp')
 import TradeOfferManager = require('steam-tradeoffer-manager')
-import { resolve as resolvePath } from 'path'
-import { logger } from '..'
-import { Trade } from '../types'
-import { Config, TradeOffer, TradeOfferState } from './interfaces'
-import { existsAsync, readFileAsync, waitAsync, writeFileAsync } from './utils'
 
 export class Bot {
   protected _user: SteamUser
   protected _community: SteamCommunity
   protected _manager: TradeOfferManager
-  protected _sessionHasExpired: boolean = false
+  public sessionHasExpired: boolean = false
+  private sent_trades: { [key: string]: boolean } = {}
   protected _log
   constructor(protected _config: Config, private l) {
     const log = l.child({ source: 'bot' })
@@ -38,7 +39,7 @@ export class Bot {
     this._user.on('webSession', (sessionId, cookies) => {
       log.info(`SteamUser session ${sessionId} started, configuring TradeManager and SteamCommunity cookies`)
 
-      this._sessionHasExpired = false
+      this.sessionHasExpired = false
       this._manager.setCookies(cookies)
       this._community.setCookies(cookies)
       this._community.startConfirmationChecker(1000, this._config.identity_secret)
@@ -66,11 +67,11 @@ export class Bot {
     this._community.on('sessionExpired', error => {
       log.debug(`this._community.on('sessionExpired')`, { error })
 
-      if (this._sessionHasExpired) {
+      if (this.sessionHasExpired) {
         return
       }
 
-      this._sessionHasExpired = true
+      this.sessionHasExpired = true
       log.warn('SteamCommunity session has expired, logging SteamUser on again')
       this._user.webLogOn()
     })
@@ -83,10 +84,10 @@ export class Bot {
 
       log.info('TradeManager wrote pollData')
     })
-    this._community.on('newConfirmation', function(d) {
+    this._community.on('newConfirmation', function (d) {
       var time = Math.round(Date.now() / 1e3)
       var data = SteamTOTP.getConfirmationKey(this._config.identity_secret, time, 'allow')
-      this._community.respondToConfirmation(d.id, d.key, time, data, true, function(error) {
+      this._community.respondToConfirmation(d.id, d.key, time, data, true, function (error) {
         console.log('[BOT] Outgoing confirmation for the trade: ' + d.key)
         if (error) {
           console.log('[BOT] Error while confirming the trade: ' + error)
@@ -127,18 +128,22 @@ export class Bot {
 
     await this._waitForSteamConnection()
     await this._startListening()
+
   }
 
-  public sendTrade({ item_id, tradelink, costum_id }: Trade) {
-    logger.info(`Sending a new TRADE to ${tradelink} an item id ${item_id}`)
+  public sendTrade({ tradelink, trade_message, items, id }: ISendTrade) {
+    if (this.sent_trades[id]) return
+    logger.info(`Sending a new TRADE to ${tradelink}`)
     const offer = this._manager.createOffer(tradelink)
-    offer.addMyItem({
-      appid: 730,
-      contextid: 2,
-      amount: 1,
-      assetid: item_id,
-    })
-    offer.setMessage(costum_id)
+    this.sent_trades[id] = true
+    for (let i of items)
+      offer.addMyItem({
+        appid: 730,
+        contextid: 2,
+        amount: 1,
+        assetid: i,
+      })
+    offer.setMessage(trade_message)
     offer.send((err, send) => {
       if (err) return logger.error(err)
       logger.info(`Sent the trade`, send)
@@ -148,7 +153,7 @@ export class Bot {
       })
     })
   }
-  public getMyApi() {
+  public getMyApi(): Promise<string> {
     return new Promise((resolve, reject) => {
       this._community.getWebApiKey('localhost', (err, key) => {
         if (!err && key) {
