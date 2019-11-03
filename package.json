@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "rm -rf dist && tsc",
+    "build": "tsc",
+    "tsc": "tsc",
     "start": "node dist/index.js",
     "dev": "cross-env NODE_ENV=development WAXPEER_API=1e57b79183077b15e0b8e07fae469a15b2fa83f304476b875e5c1896eed7d6dd tsc-watch --onSuccess \"node ./dist/index.js\""
   },
