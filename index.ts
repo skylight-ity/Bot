@@ -27,6 +27,7 @@ async function main() {
   })
 }
 async function startWaxpeer(key: string, bot: Bot) {
+  console.log(key)
   let peer = new Waxpeer(process.env.WAXPEER_API, key)
   log.info('Started waxpeer')
   try {
